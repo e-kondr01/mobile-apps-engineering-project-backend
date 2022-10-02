@@ -2,6 +2,37 @@ from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.db import models
 
 
+class StudyGroup(models.Model):
+
+    code = models.CharField(max_length=31, verbose_name="Код группы")
+
+    program_name = models.CharField(max_length=255, verbose_name="Название направления")
+
+    enrollment_year = models.PositiveSmallIntegerField(
+        verbose_name="Год начала обучения"
+    )
+
+    is_active = models.BooleanField(default=True, verbose_name="Активна?")
+
+    class EducationLevels(models.IntegerChoices):
+        BACHELOR = 0, "Бакалавриат"
+        MASTER = 1, "Магистратура"
+        PHD = 2, "Аспирантура"
+
+    education_level = models.PositiveSmallIntegerField(
+        choices=EducationLevels.choices,
+        default=EducationLevels.BACHELOR,
+        verbose_name="Уровень образования",
+    )
+
+    def __str__(self) -> str:
+        return self.program_name + " " + str(self.enrollment_year)
+
+    class Meta:
+        verbose_name = "Учебная группа"
+        verbose_name_plural = "Учебные группы"
+
+
 class UserManager(BaseUserManager):
     """
     Model manager for User model with no username field
@@ -62,3 +93,12 @@ class User(AbstractUser):
     email = models.EmailField(unique=True, verbose_name="Адрес электронной почты")
 
     objects = UserManager()
+
+    study_group: StudyGroup | None = models.ForeignKey(
+        to=StudyGroup,
+        on_delete=models.SET_NULL,
+        related_name="users",
+        blank=True,
+        null=True,
+        verbose_name="Учебная группа",
+    )

@@ -1,11 +1,21 @@
 from django.db import models
+from users.models import StudyGroup
 
 
 class Subject(models.Model):
 
     title = models.CharField(max_length=255, verbose_name="Название")
 
-    # TODO: группа, преподаватель
+    teacher_info = models.TextField(
+        blank=True, verbose_name="Информация о преподавателе"
+    )
+
+    study_group: StudyGroup = models.ForeignKey(
+        to=StudyGroup,
+        on_delete=models.CASCADE,
+        related_name="subjects",
+        verbose_name="Учебная группа",
+    )
 
     def __str__(self) -> str:
         return self.title
@@ -39,11 +49,15 @@ class Task(models.Model):
     description = models.TextField(blank=True, verbose_name="Описание")
 
     def __str__(self) -> str:
-        return self.title
+        task_str = self.title
+        if self.subject:
+            task_str += ", " + str(self.subject)
+        return task_str
 
     class Meta:
         verbose_name = "Задание"
         verbose_name_plural = "Задания"
+        ordering = ("deadline_at",)
 
 
 class TaskFile(models.Model):

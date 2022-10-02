@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
 
-from .models import User
+from .models import StudyGroup, User
 
 
 class UserAdmin(DjangoUserAdmin):
@@ -10,7 +10,7 @@ class UserAdmin(DjangoUserAdmin):
     """
 
     fieldsets = (
-        (None, {"fields": ("email", "password")}),
+        (None, {"fields": ("email", "password", "study_group")}),
         (
             "Permissions",
             {
@@ -40,3 +40,8 @@ class UserAdmin(DjangoUserAdmin):
 
 
 admin.site.register(User, UserAdmin)
+
+
+@admin.register(StudyGroup)
+class StudyGroupAdmin(admin.ModelAdmin):
+    pass
