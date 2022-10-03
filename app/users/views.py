@@ -8,7 +8,7 @@ from .serializers import StudyGroupCodeSerializer
 
 class StudyGroupFilter(filters.FilterSet):
     q = filters.CharFilter(
-        field_name="code", lookup_expr="istartswith", help_text="Поиск по коду группы"
+        field_name="code", lookup_expr="icontains", help_text="Поиск по коду группы"
     )
 
     class Meta:
