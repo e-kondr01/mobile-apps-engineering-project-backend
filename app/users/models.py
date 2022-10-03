@@ -26,7 +26,7 @@ class StudyGroup(models.Model):
     )
 
     def __str__(self) -> str:
-        return self.program_name + " " + str(self.enrollment_year)
+        return self.code + " " + str(self.enrollment_year)
 
     class Meta:
         verbose_name = "Учебная группа"
