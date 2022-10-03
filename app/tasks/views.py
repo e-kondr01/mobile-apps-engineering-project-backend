@@ -1,3 +1,4 @@
+from django.db.models import QuerySet
 from django.utils import timezone
 from rest_framework.viewsets import ModelViewSet
 
@@ -17,6 +18,11 @@ class TaskViewSet(ModelViewSet):
         if self.action == "list":
             return TaskListSerializer
         return TaskDetailSerializer
+
+    def filter_queryset(self, queryset):
+        queryset: QuerySet = super().filter_queryset(queryset)
+        queryset = queryset.select_related("subject")
+        return queryset
 
     def get_queryset(self):
         return Task.objects.filter(
