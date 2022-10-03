@@ -1,6 +1,7 @@
 from django.contrib import admin
 from django.urls import include, path
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
+from users.views import TokenObtainPairView
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -11,6 +12,7 @@ urlpatterns = [
         name="swagger-ui",
     ),
     path("auth/", include("djoser.urls")),
+    path("auth/jwt/create/", TokenObtainPairView.as_view(), name="jwt-create"),
     path("auth/", include("djoser.urls.jwt")),
     path("", include("tasks.urls")),
     path("users/", include("users.urls")),

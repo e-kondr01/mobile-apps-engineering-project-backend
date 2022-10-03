@@ -6,7 +6,7 @@ import environ
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 env = environ.Env()
-environ.Env.read_env(BASE_DIR / "app" / ".env")
+env.read_env(BASE_DIR / "app" / ".env")
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = "5UkhC60J2k1Pn6IeuLfc9fPmfvipRG1QFTgECQPlWc6zuQpS9i6cDmoi474A0ilc"
