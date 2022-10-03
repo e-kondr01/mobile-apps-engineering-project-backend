@@ -80,6 +80,3 @@ class SubjectViewSet(ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(study_group=self.request.user.study_group)
-
-    def perform_update(self, serializer):
-        serializer.save(study_group=self.request.user.study_group)
