@@ -4,7 +4,12 @@ from django_filters import rest_framework as filters
 from rest_framework.viewsets import ModelViewSet
 
 from .models import Subject, Task
-from .serializers import SubjectSerializer, TaskDetailSerializer, TaskListSerializer
+from .serializers import (
+    PutTaskSerializer,
+    SubjectSerializer,
+    TaskDetailSerializer,
+    TaskListSerializer,
+)
 
 
 class TaskFilter(filters.FilterSet):
@@ -30,7 +35,9 @@ class TaskViewSet(ModelViewSet):
     def get_serializer_class(self, *args, **kwargs):
         if self.action == "list":
             return TaskListSerializer
-        return TaskDetailSerializer
+        if self.action == "retrieve":
+            return TaskDetailSerializer
+        return PutTaskSerializer
 
     def filter_queryset(self, queryset):
         queryset: QuerySet = super().filter_queryset(queryset)
@@ -42,6 +49,9 @@ class TaskViewSet(ModelViewSet):
             subject__study_group=self.request.user.study_group,
             deadline_at__gte=timezone.now(),
         )
+
+    def perform_create(self, serializer):
+        serializer.save(author=self.request.user)
 
 
 class SubjectFilter(filters.FilterSet):
@@ -67,3 +77,9 @@ class SubjectViewSet(ModelViewSet):
 
     def get_queryset(self):
         return self.request.user.study_group.subjects.all()
+
+    def perform_create(self, serializer):
+        serializer.save(study_group=self.request.user.study_group)
+
+    def perform_update(self, serializer):
+        serializer.save(study_group=self.request.user.study_group)

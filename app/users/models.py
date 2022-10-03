@@ -31,6 +31,7 @@ class StudyGroup(models.Model):
     class Meta:
         verbose_name = "Учебная группа"
         verbose_name_plural = "Учебные группы"
+        ordering = ("code",)
 
 
 class UserManager(BaseUserManager):

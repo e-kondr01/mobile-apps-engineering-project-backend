@@ -1,5 +1,5 @@
 from django.db import models
-from users.models import StudyGroup
+from users.models import StudyGroup, User
 
 
 class Subject(models.Model):
@@ -23,6 +23,7 @@ class Subject(models.Model):
     class Meta:
         verbose_name = "Предмет"
         verbose_name_plural = "Предметы"
+        ordering = ("title",)
 
 
 class Task(models.Model):
@@ -31,7 +32,7 @@ class Task(models.Model):
 
     subject: Subject | None = models.ForeignKey(
         to=Subject,
-        on_delete=models.CASCADE,
+        on_delete=models.SET_NULL,
         related_name="tasks",
         blank=True,
         null=True,
@@ -47,6 +48,15 @@ class Task(models.Model):
     updated_at = models.DateTimeField(auto_now=True, verbose_name="Время обновления")
 
     description = models.TextField(blank=True, verbose_name="Описание")
+
+    author: User | None = models.ForeignKey(
+        to=User,
+        on_delete=models.SET_NULL,
+        related_name="tasks",
+        null=True,
+        blank=True,
+        verbose_name="Автор",
+    )
 
     def __str__(self) -> str:
         task_str = self.title

@@ -25,3 +25,6 @@ class StudyGroupCodeListView(ListAPIView):
     queryset = StudyGroup.objects.filter(is_active=True)
     filterset_class = StudyGroupFilter
     permission_classes = (AllowAny,)
+
+
+# TODO: инфа о пользователе; регистрация с группой; подтверждение почты
