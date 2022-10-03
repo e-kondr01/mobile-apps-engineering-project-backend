@@ -12,6 +12,6 @@ urlpatterns = [
     ),
     path("auth/", include("djoser.urls")),
     path("auth/", include("djoser.urls.jwt")),
-    path("tasks/", include("tasks.urls")),
+    path("", include("tasks.urls")),
     path("users/", include("users.urls")),
 ]

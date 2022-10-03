@@ -1,7 +1,8 @@
 from rest_framework.routers import DefaultRouter
 
-from .views import TaskViewSet
+from .views import SubjectViewSet, TaskViewSet
 
 router = DefaultRouter()
-router.register("", TaskViewSet)
+router.register("tasks", TaskViewSet)
+router.register("subjects", SubjectViewSet)
 urlpatterns = router.urls
