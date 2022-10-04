@@ -1,3 +1,4 @@
+from djoser.serializers import UserCreateSerializer as DjoserUserCreateSerializer
 from rest_framework import serializers
 
 from .models import StudyGroup
@@ -15,3 +16,8 @@ class StudyGroupSerializer(serializers.ModelSerializer):
     class Meta:
         model = StudyGroup
         fields = ("id", "code", "program_name", "enrollment_year", "education_level")
+
+
+class UserCreateSerializer(DjoserUserCreateSerializer):
+    class Meta(DjoserUserCreateSerializer.Meta):
+        fields = DjoserUserCreateSerializer.Meta.fields + ("study_group",)

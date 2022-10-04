@@ -222,6 +222,9 @@ SPECTACULAR_SETTINGS = {
 DJOSER = {
     "TOKEN_MODEL": None,  # We use only JWT
     "HIDE_USERS": True,
+    "SERIALIZERS": {
+        "user_create": "users.serializers.UserCreateSerializer",
+    },
 }
 
 
