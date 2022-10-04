@@ -177,6 +177,18 @@ if env.bool("LOG_DB_QUERIES", False):
         },
     }
 
+# Cache
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": f"redis://{env.str('REDIS_HOST')}:6379/0",
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        },
+    }
+}
+
+
 # Rest Framework
 
 REST_FRAMEWORK = {
@@ -224,6 +236,10 @@ DJOSER = {
     "HIDE_USERS": True,
     "SERIALIZERS": {
         "current_user": "users.serializers.CurrentUserSerializer",
+    },
+    "SEND_ACTIVATION_EMAIL": True,
+    "EMAIL": {
+        "activation": "users.email.ActivationEmail",
     },
 }
 

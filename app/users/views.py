@@ -52,4 +52,4 @@ class StudyGroupCodeListView(ListAPIView):
     permission_classes = (AllowAny,)
 
 
-# TODO: подтверждение почты
+# TODO: подтверждение почты: email template, эндпоинт для активации аккаунта
