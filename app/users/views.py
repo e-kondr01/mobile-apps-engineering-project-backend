@@ -52,4 +52,4 @@ class StudyGroupCodeListView(ListAPIView):
     permission_classes = (AllowAny,)
 
 
-# TODO: инфа о пользователе; регистрация с группой; подтверждение почты
+# TODO: подтверждение почты

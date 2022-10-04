@@ -78,18 +78,16 @@ class UserManager(BaseUserManager):
 
 class User(AbstractUser):
     """
-    Custom user model with required email and no username
+    Custom user model
     """
 
     USERNAME_FIELD = "email"
 
-    REQUIRED_FIELDS = []
-
     username = None
 
-    first_name = None
+    first_name = models.CharField("Имя", max_length=150)
 
-    last_name = None
+    middle_name = models.CharField("Отчество", max_length=150, blank=True)
 
     email = models.EmailField(unique=True, verbose_name="Адрес электронной почты")
 
@@ -103,3 +101,5 @@ class User(AbstractUser):
         null=True,
         verbose_name="Учебная группа",
     )
+
+    REQUIRED_FIELDS = ["study_group", "first_name", "last_name", "middle_name"]
