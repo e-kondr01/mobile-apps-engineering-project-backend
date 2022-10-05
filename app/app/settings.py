@@ -9,7 +9,7 @@ env = environ.Env()
 env.read_env(BASE_DIR / "app" / ".env")
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "5UkhC60J2k1Pn6IeuLfc9fPmfvipRG1QFTgECQPlWc6zuQpS9i6cDmoi474A0ilc"
+SECRET_KEY = env.str("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env.bool("DEBUG", False)
@@ -31,6 +31,7 @@ DJANGO_APPS = [
 ]
 
 THIRD_PARTY_APPS = [
+    "anymail",
     "corsheaders",
     "drf_spectacular",
     "djoser",
@@ -260,3 +261,15 @@ if DEBUG:
 JAZZMIN_SETTINGS = {
     "hide_apps": ["auth"],
 }
+
+# Anymail
+
+EMAIL_BACKEND = "anymail.backends.sendinblue.EmailBackend"
+ANYMAIL = {
+    "SENDINBLUE_API_KEY": env.str("SENDINBLUE_API_KEY"),
+    "SENDINBLUE_API_URL": "https://api.sendinblue.com/v3/",
+}
+
+# App constants
+
+ACTIVATION_CODE_LENGTH = 4

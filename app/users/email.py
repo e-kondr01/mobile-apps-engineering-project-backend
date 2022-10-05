@@ -1,11 +1,12 @@
 from random import randint
 
+from django.conf import settings
 from django.core.cache import cache
 from templated_mail.mail import BaseEmailMessage
 
 
 class ActivationEmail(BaseEmailMessage):
-    template_name = "email/activation.html"
+    template_name = "email/activation_code.html"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -14,7 +15,7 @@ class ActivationEmail(BaseEmailMessage):
 
         random_number = randint(0, 9999)
         activation_code = str(random_number)
-        while len(activation_code) < 4:
+        while len(activation_code) < settings.ACTIVATION_CODE_LENGTH:
             activation_code = "0" + activation_code
 
         cache.set(

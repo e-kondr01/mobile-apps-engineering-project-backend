@@ -1,0 +1,15 @@
+{% block subject %}
+Активация аккаунта в приложении StuTask
+{% endblock subject %}
+
+{% block text_body %}
+Код для активации: {{ activation_code }}
+
+{% endblock text_body %}
+
+{% block html_body %}
+<p>Код для активации:</p>
+
+<p><b>{{activation_code}}</b></p>
+
+{% endblock html_body %}
