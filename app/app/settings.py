@@ -269,6 +269,7 @@ ANYMAIL = {
     "SENDINBLUE_API_KEY": env.str("SENDINBLUE_API_KEY"),
     "SENDINBLUE_API_URL": "https://api.sendinblue.com/v3/",
 }
+DEFAULT_FROM_EMAIL = "noreply@stutask.ru"
 
 # App constants
 
