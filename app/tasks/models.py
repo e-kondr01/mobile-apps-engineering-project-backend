@@ -39,7 +39,7 @@ class Task(models.Model):
         verbose_name="Предмет",
     )
 
-    deadline_at = models.DateField(
+    deadline_at = models.DateTimeField(
         null=True, blank=True, verbose_name="Срок выполнения"
     )
 
@@ -48,6 +48,8 @@ class Task(models.Model):
     updated_at = models.DateTimeField(auto_now=True, verbose_name="Время обновления")
 
     description = models.TextField(blank=True, verbose_name="Описание")
+
+    links = models.TextField(blank=True, verbose_name="Ссылки")
 
     author: User | None = models.ForeignKey(
         to=User,

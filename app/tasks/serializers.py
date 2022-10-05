@@ -37,14 +37,14 @@ class TaskDetailSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
             "description",
-            "files",
+            "links" "files",
         )
 
 
 class PutTaskSerializer(serializers.ModelSerializer):
     class Meta:
         model = Task
-        fields = ("id", "title", "subject", "deadline_at", "description")
+        fields = ("id", "title", "subject", "deadline_at", "description", "links")
 
 
 class SubjectSerializer(serializers.ModelSerializer):
