@@ -28,10 +28,6 @@ pip install -r requirements/local.txt
 cp app/app/local.example.env app/app/.env
 ```
 
-5. Collect staticfiles
-```bash
-python app/manage.py collectstatic --noinput
-```
 #### Docker and Docker compose
 Refer to:
 
