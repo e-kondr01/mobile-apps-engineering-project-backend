@@ -26,6 +26,10 @@ class TaskFileSerializer(serializers.ModelSerializer):
 class TaskDetailSerializer(serializers.ModelSerializer):
     subject = ShortSubjectSerializer(read_only=True)
     files = TaskFileSerializer(many=True, read_only=True)
+    status = serializers.SerializerMethodField()
+
+    def get_status(self, task: Task) -> str:
+        return task.get_status(user=self.context["request"].user).value
 
     class Meta:
         model = Task
@@ -39,6 +43,7 @@ class TaskDetailSerializer(serializers.ModelSerializer):
             "description",
             "links",
             "files",
+            "status",
         )
 
 

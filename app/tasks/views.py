@@ -1,9 +1,12 @@
 from django.db.models import Q, QuerySet
+from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django_filters import rest_framework as filters
 from drf_spectacular.utils import OpenApiExample, extend_schema
+from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
 
 from .examples import TASK_DATE_GROUPS_RESPONSE_EXAMPLE
@@ -126,3 +129,23 @@ class SubjectViewSet(ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(study_group=self.request.user.study_group)
+
+
+class CompleteTaskView(APIView):
+    def put(self, request, *args, **kwargs):
+        """
+        Пометить задание как выполненное
+        """
+        task: Task = get_object_or_404(Task, pk=self.kwargs["pk"])
+        task.completed_by.add(request.user)
+
+        return Response(status=status.HTTP_201_CREATED)
+
+    def delete(self, request, *args, **kwargs):
+        """
+        Пометить задание как невыполненное
+        """
+        task: Task = get_object_or_404(Task, pk=self.kwargs["pk"])
+        task.completed_by.remove(request.user)
+
+        return Response(status=status.HTTP_204_NO_CONTENT)

@@ -1,4 +1,7 @@
+from enum import Enum
+
 from django.db import models
+from django.utils import timezone
 from users.models import StudyGroup, User
 
 
@@ -60,11 +63,40 @@ class Task(models.Model):
         verbose_name="Автор",
     )
 
+    completed_by = models.ManyToManyField(
+        to=User,
+        blank=True,
+        related_name="completed_tasks",
+        verbose_name="Выполнено пользователями",
+    )
+
     def __str__(self) -> str:
         task_str = self.title
         if self.subject:
             task_str += ", " + str(self.subject)
         return task_str
+
+    class Status(Enum):
+        """
+        Возможные статусы задачи для пользователя
+        """
+
+        COMPLETED = "completed"
+        TODO = "todo"
+        OVERDUE = "overdue"
+
+    def get_status(self, user: User) -> Status:
+        """
+        Статус задачи для конкретного пользователя
+        """
+
+        if self.completed_by.filter(pk=user.pk).exists():
+            return self.Status.COMPLETED
+
+        if self.deadline_at and timezone.now() >= self.deadline_at:
+            return self.Status.OVERDUE
+
+        return self.Status.TODO
 
     class Meta:
         verbose_name = "Задание"
