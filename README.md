@@ -1,6 +1,6 @@
 # Проект по предмету "Проектирование мобильных и сетевых приложений"
 
-Бэкенда на Django Rest Framework.
+Бэкенд на Django Rest Framework.
 
 ## Python version
 3.10
@@ -64,4 +64,3 @@ Use shortcut script:
 ```bash
 make up
 ```
-
