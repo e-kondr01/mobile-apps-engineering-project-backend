@@ -3,19 +3,14 @@ from rest_framework import serializers
 from .models import Subject, Task, TaskFile
 
 
-class ShortSubjectSerializer(serializers.ModelSerializer):
-    assessment_type = serializers.SerializerMethodField()
-
-    def get_assessment_type(self, subject: Subject) -> str:
-        return subject.get_assessment_type_display()
-
+class SubjectTitleSerializer(serializers.ModelSerializer):
     class Meta:
         model = Subject
-        fields = ("id", "title", "teacher_name", "assessment_type")
+        fields = ("id", "title")
 
 
 class TaskListSerializer(serializers.ModelSerializer):
-    subject = ShortSubjectSerializer(read_only=True)
+    subject = SubjectTitleSerializer(read_only=True)
 
     class Meta:
         model = Task
@@ -29,7 +24,7 @@ class TaskFileSerializer(serializers.ModelSerializer):
 
 
 class TaskDetailSerializer(serializers.ModelSerializer):
-    subject = ShortSubjectSerializer(read_only=True)
+    subject = SubjectTitleSerializer(read_only=True)
     files = TaskFileSerializer(many=True, read_only=True)
     status = serializers.SerializerMethodField()
 
@@ -50,6 +45,14 @@ class TaskDetailSerializer(serializers.ModelSerializer):
             "files",
             "status",
         )
+
+
+class TaskDateGroupSerializer(TaskListSerializer):
+    is_urgent = serializers.BooleanField(default=False)
+    is_overdue = serializers.BooleanField(default=False)
+
+    class Meta(TaskListSerializer.Meta):
+        fields = TaskListSerializer.Meta.fields + ("is_urgent", "is_overdue")
 
 
 class PutTaskSerializer(serializers.ModelSerializer):
@@ -87,3 +90,14 @@ class UpdateSubjectSerializer(serializers.ModelSerializer):
             "additional_info",
             "teacher_contacts",
         )
+
+
+class SubjectListSerializer(serializers.ModelSerializer):
+    assessment_type = serializers.SerializerMethodField()
+
+    def get_assessment_type(self, subject: Subject) -> str:
+        return subject.get_assessment_type_display()
+
+    class Meta:
+        model = Subject
+        fields = ("id", "title", "teacher_name", "assessment_type")

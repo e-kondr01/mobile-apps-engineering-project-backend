@@ -1,8 +1,13 @@
-from django.db.models import Q, QuerySet
+from django.db.models import BooleanField, Case, Q, QuerySet, Value, When
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django_filters import rest_framework as filters
-from drf_spectacular.utils import OpenApiExample, extend_schema
+from drf_spectacular.utils import (
+    OpenApiExample,
+    OpenApiParameter,
+    extend_schema,
+    extend_schema_view,
+)
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.mixins import UpdateModelMixin
@@ -14,8 +19,9 @@ from .examples import TASK_DATE_GROUPS_RESPONSE_EXAMPLE
 from .models import Subject, Task
 from .serializers import (
     PutTaskSerializer,
-    ShortSubjectSerializer,
+    SubjectListSerializer,
     SubjectSerializer,
+    TaskDateGroupSerializer,
     TaskDetailSerializer,
     TaskListSerializer,
     UpdateSubjectSerializer,
@@ -29,11 +35,51 @@ class TaskFilter(filters.FilterSet):
         help_text="Поиск по названию задания",
     )
 
+    status = filters.CharFilter(method="filter_by_status")
+
+    def filter_by_status(self, queryset: QuerySet, name, value: str) -> QuerySet:
+        if value == Task.Status.COMPLETED.value:
+            queryset = queryset.filter(completed_by=self.request.user)
+        elif value == Task.Status.TODO.value:
+            queryset = queryset.exclude(completed_by=self.request.user)
+            queryset = queryset.annotate(
+                is_overdue=Case(
+                    When(
+                        deadline_at__lte=timezone.now(),
+                        then=Value(True),
+                    ),
+                    When(
+                        deadline_at__gt=timezone.now(),
+                        then=Value(False),
+                    ),
+                    When(
+                        deadline_at__isnull=True,
+                        then=Value(False),
+                    ),
+                ),
+            )
+        return queryset
+
     class Meta:
         model = Task
         fields = ("title", "subject")
 
 
+schema_status_parameter = extend_schema(
+    parameters=[
+        OpenApiParameter(
+            "status",
+            str,
+            OpenApiParameter.QUERY,
+            description='Фильтр "Актуальное/Выполненное"',
+            enum=["todo", "completed"],
+            default="todo",
+        )
+    ]
+)
+
+
+@extend_schema_view(list=schema_status_parameter, date_groups=schema_status_parameter)
 class TaskViewSet(ModelViewSet):
     """
     CRUD для задач.
@@ -43,8 +89,10 @@ class TaskViewSet(ModelViewSet):
     filterset_class = TaskFilter
 
     def get_serializer_class(self, *args, **kwargs):
-        if self.action in ("list", "date_groups"):
+        if self.action == "list":
             return TaskListSerializer
+        if self.action == "date_groups":
+            return TaskDateGroupSerializer
         if self.action == "retrieve":
             return TaskDetailSerializer
         return PutTaskSerializer
@@ -56,7 +104,6 @@ class TaskViewSet(ModelViewSet):
 
     def get_queryset(self):
         return Task.objects.filter(
-            Q(deadline_at__gte=timezone.now()) | Q(deadline_at__isnull=True),
             subject__study_group=self.request.user.study_group,
         )
 
@@ -66,20 +113,21 @@ class TaskViewSet(ModelViewSet):
     @extend_schema(
         examples=[
             OpenApiExample("Example", value=TASK_DATE_GROUPS_RESPONSE_EXAMPLE),
-        ]
+        ],
     )
     @action(detail=False, methods=["get"])
-    def date_groups(self, *args, **kwargs):
+    def date_groups(self, request):
         """
         Список задач, сгруппированный по датам.
         """
-        # TODO: пагинация
         queryset = self.filter_queryset(self.get_queryset())
 
         serializer = self.get_serializer(queryset, many=True)
 
         resp = {"No deadline": []}
         serialized_task: dict
+
+        should_be_urgent = False  # TODO
         for serialized_task in serializer.data:
             deadline_at_str = serialized_task["deadline_at"]
             # Задача с дедлайном
@@ -87,18 +135,8 @@ class TaskViewSet(ModelViewSet):
                 # Получаем строку даты
                 date_str = deadline_at_str.split("T")[0]
                 if date_str in resp:
-
-                    # Проверка на срочность задачи
-                    if len(resp) == 2:
-                        serialized_task["is_urgent"] = True
-
                     resp[date_str].append(serialized_task)
                 else:
-
-                    # Проверка на срочность задачи
-                    if len(resp) == 1:
-                        serialized_task["is_urgent"] = True
-
                     resp[date_str] = [serialized_task]
             else:
                 # Задача без дедлайна
@@ -128,7 +166,7 @@ class SubjectViewSet(UpdateModelMixin, ReadOnlyModelViewSet):
 
     def get_serializer_class(self):
         if self.action == "list":
-            return ShortSubjectSerializer
+            return SubjectListSerializer
         if self.action == "retrieve":
             return SubjectSerializer
         return UpdateSubjectSerializer
