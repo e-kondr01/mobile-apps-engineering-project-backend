@@ -1,5 +1,6 @@
 from enum import Enum
 
+from django.contrib.postgres.fields import ArrayField
 from django.db import models
 from django.utils import timezone
 from users.models import StudyGroup, User
@@ -9,8 +10,31 @@ class Subject(models.Model):
 
     title = models.CharField(max_length=255, verbose_name="Название")
 
-    teacher_info = models.TextField(
-        blank=True, verbose_name="Информация о преподавателе"
+    teacher_name = models.CharField(
+        max_length=255, blank=True, verbose_name="ФИО преподавателя"
+    )
+
+    teacher_contacts = ArrayField(
+        models.CharField(max_length=127),
+        blank=True,
+        null=True,
+        verbose_name="Контакты преподавателя",
+        help_text="Несколько значений можно разделить запятой",
+    )
+
+    class AssessmentType(models.IntegerChoices):
+        EXAM = 0, "Экзамен"
+        CREDIT = 1, "Зачёт"
+        DIFFERENTIATED_CREDIT = 2, "Дифференцированный зачёт"
+
+    assessment_type = models.PositiveSmallIntegerField(
+        choices=AssessmentType.choices,
+        default=AssessmentType.CREDIT,
+        verbose_name="Вид контроля",
+    )
+
+    additional_info = models.TextField(
+        blank=True, verbose_name="Дополнительная информация"
     )
 
     study_group: StudyGroup = models.ForeignKey(

@@ -14,14 +14,14 @@ class StudyGroup(models.Model):
 
     is_active = models.BooleanField(default=True, verbose_name="Активна?")
 
-    class EducationLevels(models.IntegerChoices):
+    class EducationLevel(models.IntegerChoices):
         BACHELOR = 0, "Бакалавриат"
         MASTER = 1, "Магистратура"
         PHD = 2, "Аспирантура"
 
     education_level = models.PositiveSmallIntegerField(
-        choices=EducationLevels.choices,
-        default=EducationLevels.BACHELOR,
+        choices=EducationLevel.choices,
+        default=EducationLevel.BACHELOR,
         verbose_name="Уровень образования",
     )
 
