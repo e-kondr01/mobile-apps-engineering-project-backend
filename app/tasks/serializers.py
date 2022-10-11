@@ -4,9 +4,14 @@ from .models import Subject, Task, TaskFile
 
 
 class ShortSubjectSerializer(serializers.ModelSerializer):
+    assessment_type = serializers.SerializerMethodField()
+
+    def get_assessment_type(self, subject: Subject) -> str:
+        return subject.get_assessment_type_display()
+
     class Meta:
         model = Subject
-        fields = ("id", "title")
+        fields = ("id", "title", "teacher_name", "assessment_type")
 
 
 class TaskListSerializer(serializers.ModelSerializer):
@@ -54,6 +59,31 @@ class PutTaskSerializer(serializers.ModelSerializer):
 
 
 class SubjectSerializer(serializers.ModelSerializer):
+    assessment_type = serializers.SerializerMethodField()
+
+    def get_assessment_type(self, subject: Subject) -> str:
+        return subject.get_assessment_type_display()
+
     class Meta:
         model = Subject
-        fields = ("id", "title", "teacher_info")
+        fields = (
+            "id",
+            "title",
+            "teacher_name",
+            "assessment_type",
+            "additional_info",
+            "teacher_contacts",
+        )
+
+
+class UpdateSubjectSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Subject
+        fields = (
+            "id",
+            "title",
+            "teacher_name",
+            "assessment_type",
+            "additional_info",
+            "teacher_contacts",
+        )

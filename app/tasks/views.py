@@ -5,17 +5,20 @@ from django_filters import rest_framework as filters
 from drf_spectacular.utils import OpenApiExample, extend_schema
 from rest_framework import status
 from rest_framework.decorators import action
+from rest_framework.mixins import UpdateModelMixin
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework.viewsets import ModelViewSet
+from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 
 from .examples import TASK_DATE_GROUPS_RESPONSE_EXAMPLE
 from .models import Subject, Task
 from .serializers import (
     PutTaskSerializer,
+    ShortSubjectSerializer,
     SubjectSerializer,
     TaskDetailSerializer,
     TaskListSerializer,
+    UpdateSubjectSerializer,
 )
 
 
@@ -115,20 +118,23 @@ class SubjectFilter(filters.FilterSet):
         fields = ("title",)
 
 
-class SubjectViewSet(ModelViewSet):
+class SubjectViewSet(UpdateModelMixin, ReadOnlyModelViewSet):
     """
     CRUD для учебных дисциплин.
     """
 
     queryset = Subject.objects.none()
-    serializer_class = SubjectSerializer
     filterset_class = SubjectFilter
+
+    def get_serializer_class(self):
+        if self.action == "list":
+            return ShortSubjectSerializer
+        if self.action == "retrieve":
+            return SubjectSerializer
+        return UpdateSubjectSerializer
 
     def get_queryset(self):
         return self.request.user.study_group.subjects.all()
-
-    def perform_create(self, serializer):
-        serializer.save(study_group=self.request.user.study_group)
 
 
 class CompleteTaskView(APIView):
