@@ -1,6 +1,5 @@
-from django.db.models import BooleanField, Case, Q, QuerySet, Value, When
+from django.db.models import QuerySet
 from django.shortcuts import get_object_or_404
-from django.utils import timezone
 from django_filters import rest_framework as filters
 from drf_spectacular.utils import (
     OpenApiExample,
@@ -39,25 +38,17 @@ class TaskFilter(filters.FilterSet):
 
     def filter_by_status(self, queryset: QuerySet, name, value: str) -> QuerySet:
         if value == Task.Status.COMPLETED.value:
+            # Только те, которые завершены пользователем
             queryset = queryset.filter(completed_by=self.request.user)
+
         elif value == Task.Status.TODO.value:
+            # Исключаем те, которые были завершены
             queryset = queryset.exclude(completed_by=self.request.user)
-            queryset = queryset.annotate(
-                is_overdue=Case(
-                    When(
-                        deadline_at__lte=timezone.now(),
-                        then=Value(True),
-                    ),
-                    When(
-                        deadline_at__gt=timezone.now(),
-                        then=Value(False),
-                    ),
-                    When(
-                        deadline_at__isnull=True,
-                        then=Value(False),
-                    ),
-                ),
-            )
+            # Аннотируем просроченные
+            queryset = Task.annotate_overdue(queryset)
+            # Аннотируем срочные
+            queryset = Task.annotate_urgent(queryset)
+
         return queryset
 
     class Meta:
@@ -88,7 +79,7 @@ class TaskViewSet(ModelViewSet):
     queryset = Task.objects.none()
     filterset_class = TaskFilter
 
-    def get_serializer_class(self, *args, **kwargs):
+    def get_serializer_class(self):
         if self.action == "list":
             return TaskListSerializer
         if self.action == "date_groups":
@@ -127,7 +118,6 @@ class TaskViewSet(ModelViewSet):
         resp = {"No deadline": []}
         serialized_task: dict
 
-        should_be_urgent = False  # TODO
         for serialized_task in serializer.data:
             deadline_at_str = serialized_task["deadline_at"]
             # Задача с дедлайном

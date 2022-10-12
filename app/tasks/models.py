@@ -2,6 +2,7 @@ from enum import Enum
 
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
+from django.db.models import Case, Min, Value, When
 from django.utils import timezone
 from users.models import StudyGroup, User
 
@@ -121,6 +122,56 @@ class Task(models.Model):
             return self.Status.OVERDUE
 
         return self.Status.TODO
+
+    @staticmethod
+    def annotate_overdue(queryset: models.QuerySet) -> models.QuerySet:
+        """
+        Добавляет аннотацию к QuerySet задач в виде поля is_overdue,
+        которое показывает, просрочена ли задача
+        """
+        queryset = queryset.annotate(
+            is_overdue=Case(
+                When(
+                    deadline_at__lte=timezone.now(),
+                    then=Value(True),
+                ),
+                When(
+                    deadline_at__gt=timezone.now(),
+                    then=Value(False),
+                ),
+                When(
+                    deadline_at__isnull=True,
+                    then=Value(False),
+                ),
+            ),
+        )
+        return queryset
+
+    @staticmethod
+    def annotate_urgent(queryset: models.QuerySet) -> models.QuerySet:
+        """
+        Добавляет аннотацию к QuerySet задач в виде поля is_urgent,
+        которое показывает, является ли задача срочной.
+        Задача является срочной, если она не выполнена, и её дедлайн
+        в ближайшую дату из невыполненных задач пользователя.
+        """
+        urgent_date = queryset.filter(deadline_at__gt=timezone.now()).aggregate(
+            Min("deadline_at__date")
+        )["deadline_at__date__min"]
+
+        queryset = queryset.annotate(
+            is_urgent=Case(
+                When(
+                    deadline_at__date=urgent_date,
+                    then=Value(True),
+                ),
+                When(
+                    ~models.Q(deadline_at__date=urgent_date),
+                    then=Value(False),
+                ),
+            ),
+        )
+        return queryset
 
     class Meta:
         verbose_name = "Задание"
