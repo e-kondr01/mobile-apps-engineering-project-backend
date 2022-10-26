@@ -227,7 +227,7 @@ SPECTACULAR_SETTINGS = {
     "TITLE": "Task Deadlines",
     "DESCRIPTION": "Task Deadlines Django REST API",
     "VERSION": "0.0.1",
-    "SCHEMA_PATH_PREFIX": env.str("SCHEMA_PATH_PREFIX", ""),
+    "SCHEMA_PATH_PREFIX_INSERT": env.str("SCHEMA_PATH_PREFIX_INSERT", ""),
 }
 
 
