@@ -70,7 +70,6 @@ class UserActivationView(APIView):
 
         user = get_object_or_404(User, email=serializer.validated_data["email"])
         code_in_cache = cache.get(f"tasks_backend:activation_codes:{user.pk}")
-        print(code_in_cache)
 
         if serializer.validated_data["code"] == code_in_cache:
             user.is_active = True
