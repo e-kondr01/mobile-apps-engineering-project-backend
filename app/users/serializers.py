@@ -1,26 +1,15 @@
+from academic_plans.serializers import (
+    EducationalProgramSerializer,
+    FieldOfStudySerializer,
+)
 from django.conf import settings
 from djoser.serializers import UserSerializer
 from rest_framework import serializers
 
-from .models import StudyGroup
-
-
-class StudyGroupCodeSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = StudyGroup
-        fields = ("id", "code")
-
-
-class StudyGroupSerializer(serializers.ModelSerializer):
-    education_level = serializers.CharField(source="get_education_level_display")
-
-    class Meta:
-        model = StudyGroup
-        fields = ("id", "code", "program_name", "enrollment_year", "education_level")
-
 
 class CurrentUserSerializer(UserSerializer):
-    study_group = StudyGroupCodeSerializer(read_only=True)
+    field_of_study = FieldOfStudySerializer(read_only=True)
+    educational_program = EducationalProgramSerializer(read_only=True)
 
 
 class ActivationCodeSerializer(serializers.Serializer):

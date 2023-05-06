@@ -1,10 +1,15 @@
 from django.contrib import admin
 
-from .models import Subject, Task, TaskFile
+from .models import Subject, SubjectInAcademicPlan, Task, TaskFile
 
 
 @admin.register(Subject)
 class SubjectAdmin(admin.ModelAdmin):
+    pass
+
+
+@admin.register(SubjectInAcademicPlan)
+class SubjectInAcademicPlanAdmin(admin.ModelAdmin):
     pass
 
 

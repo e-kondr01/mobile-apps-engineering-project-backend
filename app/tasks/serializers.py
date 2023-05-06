@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import Subject, Task, TaskFile
+from .models import Subject, SubjectInAcademicPlan, Task, TaskFile
 
 
 class SubjectTitleSerializer(serializers.ModelSerializer):
@@ -10,7 +10,10 @@ class SubjectTitleSerializer(serializers.ModelSerializer):
 
 
 class TaskListSerializer(serializers.ModelSerializer):
-    subject = SubjectTitleSerializer(read_only=True)
+    subject = serializers.SerializerMethodField()
+
+    def get_subject(self, obj) -> SubjectTitleSerializer:
+        return SubjectTitleSerializer(obj.subject_entry.subject).data
 
     class Meta:
         model = Task
@@ -24,12 +27,15 @@ class TaskFileSerializer(serializers.ModelSerializer):
 
 
 class TaskDetailSerializer(serializers.ModelSerializer):
-    subject = SubjectTitleSerializer(read_only=True)
+    subject = serializers.SerializerMethodField()
     files = TaskFileSerializer(many=True, read_only=True)
     status = serializers.SerializerMethodField()
 
     def get_status(self, task: Task) -> str:
         return task.get_status(user=self.context["request"].user).value
+
+    def get_subject(self, obj) -> SubjectTitleSerializer:
+        return SubjectTitleSerializer(obj.subject_entry.subject).data
 
     class Meta:
         model = Task
@@ -56,48 +62,60 @@ class TaskDateGroupSerializer(TaskListSerializer):
 
 
 class PutTaskSerializer(serializers.ModelSerializer):
+    subject = serializers.PrimaryKeyRelatedField(
+        source="subject_entry", queryset=SubjectInAcademicPlan.objects.all()
+    )
+
     class Meta:
         model = Task
         fields = ("id", "title", "subject", "deadline_at", "description", "links")
 
-
-class SubjectSerializer(serializers.ModelSerializer):
-    assessment_type = serializers.SerializerMethodField()
-
-    def get_assessment_type(self, subject: Subject) -> str:
-        return subject.get_assessment_type_display()
-
-    class Meta:
-        model = Subject
-        fields = (
-            "id",
-            "title",
-            "teacher_name",
-            "assessment_type",
-            "additional_info",
-            "teacher_contacts",
-        )
-
-
-class UpdateSubjectSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Subject
-        fields = (
-            "id",
-            "title",
-            "teacher_name",
-            "assessment_type",
-            "additional_info",
-            "teacher_contacts",
-        )
+    # def save(self, **kwargs):
+    #     print(self.validated_data)
+    #     subject_entry = self.validated_data.pop("subject")
+    #     self.validated_data["subject_entry"] = subject_entry
+    #     return super().save(**kwargs)
 
 
 class SubjectListSerializer(serializers.ModelSerializer):
-    assessment_type = serializers.SerializerMethodField()
+    title = serializers.CharField(source="subject.title")
+    teacher_name = serializers.CharField(source="subject.teacher_name")
+    assessment_type = serializers.CharField(
+        source="subject.get_assessment_type_display"
+    )
 
-    def get_assessment_type(self, subject: Subject) -> str:
-        return subject.get_assessment_type_display()
+    class Meta:
+        model = SubjectInAcademicPlan
+        fields = ("id", "title", "teacher_name", "assessment_type", "semesters")
+
+
+class SubjectSerializer(SubjectListSerializer):
+    additional_info = serializers.CharField(source="subject.additional_info")
+    teacher_contacts = serializers.CharField(source="subject.teacher_contacts")
+
+    class Meta:
+        model = SubjectInAcademicPlan
+        fields = (
+            "id",
+            "title",
+            "teacher_name",
+            "assessment_type",
+            "additional_info",
+            "teacher_contacts",
+            "semesters",
+        )
+
+
+class UpdateSubjectSerializer(SubjectListSerializer):
+    assessment_type = serializers.CharField(source="subject.assessment_type")
 
     class Meta:
         model = Subject
-        fields = ("id", "title", "teacher_name", "assessment_type")
+        fields = (
+            "id",
+            "title",
+            "teacher_name",
+            "assessment_type",
+            "additional_info",
+            "teacher_contacts",
+        )

@@ -20,7 +20,7 @@ source .venv/bin/activate
 
 3. Install requirements
 ```bash
-pip install -r requirements/local.txt
+pip install -r app/requirements/local.txt
 ```
 
 4. Copy .env

@@ -1,37 +1,8 @@
+from typing import Optional
+
+from academic_plans.models import AcademicPlan, EducationalProgram, FieldOfStudy
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.db import models
-
-
-class StudyGroup(models.Model):
-
-    code = models.CharField(max_length=31, verbose_name="Код группы")
-
-    program_name = models.CharField(max_length=255, verbose_name="Название направления")
-
-    enrollment_year = models.PositiveSmallIntegerField(
-        verbose_name="Год начала обучения"
-    )
-
-    is_active = models.BooleanField(default=True, verbose_name="Активна?")
-
-    class EducationLevel(models.IntegerChoices):
-        BACHELOR = 0, "Бакалавриат"
-        MASTER = 1, "Магистратура"
-        PHD = 2, "Аспирантура"
-
-    education_level = models.PositiveSmallIntegerField(
-        choices=EducationLevel.choices,
-        default=EducationLevel.BACHELOR,
-        verbose_name="Уровень образования",
-    )
-
-    def __str__(self) -> str:
-        return self.code + " " + str(self.enrollment_year)
-
-    class Meta:
-        verbose_name = "Учебная группа"
-        verbose_name_plural = "Учебные группы"
-        ordering = ("code",)
 
 
 class UserManager(BaseUserManager):
@@ -93,13 +64,28 @@ class User(AbstractUser):
 
     objects = UserManager()
 
-    study_group: StudyGroup | None = models.ForeignKey(
-        to=StudyGroup,
+    educational_program: Optional[EducationalProgram] = models.ForeignKey(
+        to="academic_plans.EducationalProgram",
         on_delete=models.SET_NULL,
         related_name="users",
         blank=True,
         null=True,
-        verbose_name="Учебная группа",
+        verbose_name="Образовательная программа",
     )
 
-    REQUIRED_FIELDS = ["study_group", "first_name", "last_name", "middle_name"]
+    field_of_study: Optional[FieldOfStudy] = models.ForeignKey(
+        to="academic_plans.FieldOfStudy",
+        on_delete=models.SET_NULL,
+        related_name="users",
+        blank=True,
+        null=True,
+        verbose_name="Направление подготовки",
+    )
+
+    REQUIRED_FIELDS = [
+        "first_name",
+        "last_name",
+        "middle_name",
+        "educational_program",
+        "field_of_study",
+    ]

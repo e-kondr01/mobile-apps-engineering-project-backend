@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
 
-from .models import StudyGroup, User
+from .models import User
 
 
 class UserAdmin(DjangoUserAdmin):
@@ -19,7 +19,8 @@ class UserAdmin(DjangoUserAdmin):
                     "first_name",
                     "middle_name",
                     "last_name",
-                    "study_group",
+                    "field_of_study",
+                    "educational_program",
                 )
             },
         ),
@@ -52,8 +53,3 @@ class UserAdmin(DjangoUserAdmin):
 
 
 admin.site.register(User, UserAdmin)
-
-
-@admin.register(StudyGroup)
-class StudyGroupAdmin(admin.ModelAdmin):
-    pass

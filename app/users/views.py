@@ -12,8 +12,8 @@ from rest_framework_simplejwt.views import (
     TokenObtainPairView as TokenObtainPairViewNoExample,
 )
 
-from .models import StudyGroup, User
-from .serializers import ActivationCodeSerializer, StudyGroupCodeSerializer
+from .models import User
+from .serializers import ActivationCodeSerializer
 
 env = environ.Env()
 test_access_token = env.str("TEST_ACCESS_TOKEN", "")
@@ -33,27 +33,6 @@ class TokenObtainPairView(TokenObtainPairViewNoExample):
     """
     Получение JWT для авторизации запросов.
     """
-
-
-class StudyGroupFilter(filters.FilterSet):
-    q = filters.CharFilter(
-        field_name="code", lookup_expr="icontains", help_text="Поиск по коду группы"
-    )
-
-    class Meta:
-        model = StudyGroup
-        fields = ("q",)
-
-
-class StudyGroupCodeListView(ListAPIView):
-    """
-    Список групп с их кодами
-    """
-
-    serializer_class = StudyGroupCodeSerializer
-    queryset = StudyGroup.objects.filter(is_active=True)
-    filterset_class = StudyGroupFilter
-    permission_classes = (AllowAny,)
 
 
 class UserActivationView(APIView):

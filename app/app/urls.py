@@ -17,4 +17,5 @@ urlpatterns = [
     path("api/auth/", include("djoser.urls.jwt")),
     path("api/", include("tasks.urls")),
     path("api/users/", include("users.urls")),
+    path("api/academic-plans/", include("academic_plans.urls")),
 ]

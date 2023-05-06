@@ -15,7 +15,7 @@ from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 
 from .examples import TASK_DATE_GROUPS_RESPONSE_EXAMPLE
-from .models import Subject, Task
+from .models import Subject, SubjectInAcademicPlan, Task
 from .serializers import (
     PutTaskSerializer,
     SubjectListSerializer,
@@ -35,6 +35,8 @@ class TaskFilter(filters.FilterSet):
     )
 
     status = filters.CharFilter(method="filter_by_status")
+
+    subject = filters.NumberFilter(field_name="subject_entry")
 
     def filter_by_status(self, queryset: QuerySet, name, value: str) -> QuerySet:
         if value == Task.Status.COMPLETED.value:
@@ -90,13 +92,18 @@ class TaskViewSet(ModelViewSet):
 
     def filter_queryset(self, queryset):
         queryset: QuerySet = super().filter_queryset(queryset)
-        queryset = queryset.select_related("subject")
+        queryset = queryset.select_related("subject_entry__subject")
         return queryset
 
     def get_queryset(self):
-        return Task.objects.filter(
-            subject__study_group=self.request.user.study_group,
+        subject_entry_ids = (
+            self.request.user.educational_program.academic_plan.subject_entries.filter(
+                semesters__contains=[
+                    self.request.user.educational_program.current_semester
+                ]
+            ).values_list("id", flat=True)
         )
+        return Task.objects.filter(subject_entry_id__in=subject_entry_ids)
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
@@ -136,13 +143,13 @@ class TaskViewSet(ModelViewSet):
 
 class SubjectFilter(filters.FilterSet):
     title = filters.CharFilter(
-        field_name="title",
+        field_name="subject__title",
         lookup_expr="icontains",
         help_text="Поиск названию предмета",
     )
 
     class Meta:
-        model = Subject
+        model = SubjectInAcademicPlan
         fields = ("title",)
 
 
@@ -151,7 +158,7 @@ class SubjectViewSet(UpdateModelMixin, ReadOnlyModelViewSet):
     CRUD для учебных дисциплин.
     """
 
-    queryset = Subject.objects.none()
+    queryset = SubjectInAcademicPlan.objects.none()
     filterset_class = SubjectFilter
 
     def get_serializer_class(self):
@@ -162,7 +169,13 @@ class SubjectViewSet(UpdateModelMixin, ReadOnlyModelViewSet):
         return UpdateSubjectSerializer
 
     def get_queryset(self):
-        return self.request.user.study_group.subjects.all()
+        return (
+            self.request.user.educational_program.academic_plan.subject_entries.filter(
+                semesters__contains=[
+                    self.request.user.educational_program.current_semester
+                ]
+            )
+        )
 
 
 class CompleteTaskView(APIView):

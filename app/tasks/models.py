@@ -1,18 +1,18 @@
 from enum import Enum
 
+from academic_plans.models import AcademicPlan
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
 from django.db.models import Case, Min, Value, When
 from django.utils import timezone
-from users.models import StudyGroup, User
+from users.models import User
 
 
 class Subject(models.Model):
-
-    title = models.CharField(max_length=255, verbose_name="Название")
+    title = models.CharField(max_length=511, verbose_name="Название")
 
     teacher_name = models.CharField(
-        max_length=255, blank=True, verbose_name="ФИО преподавателя"
+        max_length=511, blank=True, verbose_name="ФИО преподавателя"
     )
 
     teacher_contacts = ArrayField(
@@ -38,13 +38,6 @@ class Subject(models.Model):
         blank=True, verbose_name="Дополнительная информация"
     )
 
-    study_group: StudyGroup = models.ForeignKey(
-        to=StudyGroup,
-        on_delete=models.CASCADE,
-        related_name="subjects",
-        verbose_name="Учебная группа",
-    )
-
     def __str__(self) -> str:
         return self.title
 
@@ -54,12 +47,40 @@ class Subject(models.Model):
         ordering = ("title",)
 
 
-class Task(models.Model):
+class SubjectInAcademicPlan(models.Model):
+    subject = models.ForeignKey(
+        Subject,
+        on_delete=models.CASCADE,
+        related_name="academic_plan_entries",
+        verbose_name="Предмет",
+    )
 
+    semesters: list[int] = ArrayField(
+        models.PositiveIntegerField(), verbose_name="Семестры"
+    )
+
+    academic_plan: AcademicPlan | None = models.ForeignKey(
+        to=AcademicPlan,
+        on_delete=models.CASCADE,
+        related_name="subject_entries",
+        verbose_name="Учебный план",
+        blank=True,
+        null=True,
+    )
+
+    def __str__(self) -> str:
+        return f"{self.subject} в {self.academic_plan}"
+
+    class Meta:
+        verbose_name = "Предмет в учебном плане"
+        verbose_name_plural = "Предметы в учебных планах"
+
+
+class Task(models.Model):
     title = models.CharField(max_length=255, verbose_name="Название")
 
-    subject: Subject | None = models.ForeignKey(
-        to=Subject,
+    subject_entry: SubjectInAcademicPlan | None = models.ForeignKey(
+        to=SubjectInAcademicPlan,
         on_delete=models.SET_NULL,
         related_name="tasks",
         blank=True,
@@ -180,7 +201,6 @@ class Task(models.Model):
 
 
 class TaskFile(models.Model):
-
     file = models.FileField(verbose_name="Файл")
 
     task: Task = models.ForeignKey(
