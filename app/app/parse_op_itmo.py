@@ -1,3 +1,5 @@
+import time
+
 import requests
 from academic_plans.models import AcademicPlan, EducationalProgram, FieldOfStudy
 from django.db import transaction
@@ -73,9 +75,6 @@ def parse_subjects(data, academic_plan):
                     id = subject["id"]
                     title = subject["title"]
                     semesters = get_semesters(subject["ze_v_sem"])
-                    if len(title) > 500:
-                        print("ASDASDASD")
-                        print(title)
                     subject, _ = Subject.objects.get_or_create(
                         id=id,
                         title=title,
@@ -92,8 +91,11 @@ def parse_academic_plan(id: int):
     resp = requests.get(
         f"{host}api/academicplan/detail/{id}",
         headers={"Accept": "application/json"},
+        timeout=5,
     ).json()
 
+    if int(resp["academic_plan_in_field_of_study"][0]["year"]) < 2019:
+        return
     educational_program = parse_educational_program(
         resp["academic_plan_in_field_of_study"][0]
     )
@@ -109,7 +111,12 @@ def parse_data() -> None:
     academic_plan_ids = get_academic_plan_ids()
     with transaction.atomic():
         for academic_plan_id in academic_plan_ids:
-            parse_academic_plan(academic_plan_id)
+            print("Parsing ", academic_plan_id)
+            try:
+                parse_academic_plan(academic_plan_id)
+            except Exception as exc:
+                print(str(exc))
+            time.sleep(1)
 
 
 def test_parse_data(id):

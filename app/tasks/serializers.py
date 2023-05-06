@@ -70,12 +70,6 @@ class PutTaskSerializer(serializers.ModelSerializer):
         model = Task
         fields = ("id", "title", "subject", "deadline_at", "description", "links")
 
-    # def save(self, **kwargs):
-    #     print(self.validated_data)
-    #     subject_entry = self.validated_data.pop("subject")
-    #     self.validated_data["subject_entry"] = subject_entry
-    #     return super().save(**kwargs)
-
 
 class SubjectListSerializer(serializers.ModelSerializer):
     title = serializers.CharField(source="subject.title")
