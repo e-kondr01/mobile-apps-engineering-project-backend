@@ -37,7 +37,7 @@ class EducationalProgram(models.Model):
     @property
     def current_semester(self):
         passed_timedelta = timezone.now().date() - self.beginning_date
-        return int(passed_timedelta.days / 30 / 6 // 1 + 1)
+        return int(passed_timedelta.days / 30 / 6 // 1)
 
     def __str__(self) -> str:
         return f"{self.title} {self.enrollment_year}"
