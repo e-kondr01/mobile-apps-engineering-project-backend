@@ -10,7 +10,7 @@ class SubjectAdmin(admin.ModelAdmin):
 
 @admin.register(SubjectInAcademicPlan)
 class SubjectInAcademicPlanAdmin(admin.ModelAdmin):
-    pass
+    search_fields = ("subject__title",)
 
 
 class TaskFileInline(admin.TabularInline):
@@ -20,3 +20,4 @@ class TaskFileInline(admin.TabularInline):
 @admin.register(Task)
 class TaskAdmin(admin.ModelAdmin):
     inlines = (TaskFileInline,)
+    autocomplete_fields = ("subject_entry",)
