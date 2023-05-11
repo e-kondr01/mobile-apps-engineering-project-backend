@@ -118,8 +118,8 @@ class Task(models.Model):
 
     def __str__(self) -> str:
         task_str = self.title
-        if self.subject:
-            task_str += ", " + str(self.subject)
+        if self.subject_entry:
+            task_str += ", " + str(self.subject_entry.subject)
         return task_str
 
     class Status(Enum):
